@@ -1,0 +1,68 @@
+---
+title: "Post Selection Inference"
+author: "Peter"
+date: "`r Sys.time()`"
+output: html_document
+fig_width: 4
+fig_height: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+x1 <- rnorm(10) 
+x2 <- rnorm(10)
+
+y <- rnorm(10)
+lm1 <- lm(y ~ x1 + x2)
+tmp1 <- summary(lm1)
+tmp1
+
+pvals <- tmp1$coefficients[,4]
+pvals
+
+
+
+### 10000 Simulationen
+ps <- replicate(10000, {
+    y <- rnorm(10)
+    lm1 <- lm(y ~ x1 + x2)
+    tmp1 <- summary(lm1)
+    
+    pvals <- tmp1$coefficients[,4]
+    
+    if(pvals["x2"] < 0.05){
+        ### Wenn x2 signifikant --> ganzes Modell
+        c(pvals["x1"], 1)
+    } else {
+        ### Wenn x2 nicht signifikant --> reduziertes Modell
+        lm2 <- lm(y~x1)
+        pvals2 <- summary(lm2)$coefficients["x1",4]
+        c(pvals2, 0)
+    }
+})
+ps <- as.data.frame(t(ps))
+ps[,2] <- ifelse(ps[,2], "reduced_model", "full_model")
+colnames(ps) <- c("p.x1", "model")
+head(ps)
+
+
+table(ps$model)
+```
+
+
+Man sieht deutlich den p-value Bias der reduzierten Modelle:
+```{r}
+hist(ps$p.x1[ps$model == "reduced_model"])
+hist(ps$p.x1[ps$model == "full_model"])
+```
+
+Auch in der Verteilung aller p-Werte sieht man den Bias:
+```{r}
+hist(ps$p.x1)
+```
+
+Erhöht man die Anzahl an Beobachtungen, so wird dieser Effekt kleiner.
