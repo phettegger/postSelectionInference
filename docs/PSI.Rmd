@@ -13,6 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ```{r}
+set.seed(0)
 x1 <- rnorm(10) 
 x2 <- rnorm(10)
 
@@ -23,10 +24,12 @@ tmp1
 
 pvals <- tmp1$coefficients[,4]
 pvals
+```
 
 
+10000 Simulationen
 
-### 10000 Simulationen
+```{r}
 ps <- replicate(10000, {
     y <- rnorm(10)
     lm1 <- lm(y ~ x1 + x2)
@@ -56,13 +59,16 @@ table(ps$model)
 
 Man sieht deutlich den p-value Bias der reduzierten Modelle:
 ```{r}
-hist(ps$p.x1[ps$model == "reduced_model"])
-hist(ps$p.x1[ps$model == "full_model"])
+hist(ps$p.x1[ps$model == "reduced_model"], probability = TRUE)
+abline(h = 1, col = "blue", lty = 2, lwd = 2)
+hist(ps$p.x1[ps$model == "full_model"], probability = TRUE)
+abline(h = 1, col = "blue", lty = 2, lwd = 2)
 ```
 
 Auch in der Verteilung aller p-Werte sieht man den Bias:
 ```{r}
-hist(ps$p.x1)
+hist(ps$p.x1, probability = TRUE)
+abline(h = 1, col = "blue", lty = 2, lwd = 2)
 ```
 
 Erhöht man die Anzahl an Beobachtungen, so wird dieser Effekt kleiner.
