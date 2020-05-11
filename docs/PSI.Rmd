@@ -48,7 +48,7 @@ ps <- replicate(10000, {
     }
 })
 ps <- as.data.frame(t(ps))
-ps[,2] <- ifelse(ps[,2], "reduced_model", "full_model")
+ps[,2] <- ifelse(ps[,2], "full_model", "reduced_model")
 colnames(ps) <- c("p.x1", "model")
 head(ps)
 
